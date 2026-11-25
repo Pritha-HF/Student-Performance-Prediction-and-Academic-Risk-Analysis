@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Performance Prediction & Academic Risk Analysis</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --panel: #0f172a;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --safe: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+    body {
+      background: radial-gradient(circle at top right, #1e293b, #0f172a 65%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container { width: 100%; max-width: 1120px; display: grid; gap: 1.5rem; }
+
+    header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    header h1 { font-size: 1.45rem; font-weight: 700; }
+    header p { color: var(--muted); font-size: 0.88rem; margin-top: 0.25rem; }
+
+    .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .badge {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--accent);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .main-grid { display: grid; grid-template-columns: 1.05fr 1.25fr; gap: 1.5rem; }
+    .bottom-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem; }
+    @media (max-width: 860px) { .main-grid, .bottom-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.6rem;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1.15rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .presets { display: flex; gap: 0.45rem; }
+    .preset-btn {
+      background: var(--panel);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+      font-size: 0.74rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .preset-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.95rem; }
+    .field { display: flex; flex-direction: column; gap: 0.35rem; }
+    label { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+
+    input, select {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.68rem 0.8rem;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+
+    .submit-btn {
+      margin-top: 1.2rem;
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--accent);
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .submit-btn:hover { background: var(--accent-hover); }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem; margin-bottom: 1.1rem; }
+    .kpi {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .kpi-label { font-size: 0.74rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .kpi-value { font-size: 1.4rem; font-weight: 800; margin-top: 0.3rem; }
+
+    .prob-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .prob-row { display: flex; justify-content: space-between; font-size: 0.84rem; color: var(--muted); margin-bottom: 0.45rem; }
+    .track { height: 11px; background: #1e293b; border-radius: 999px; overflow: hidden; }
+    .fill { height: 100%; width: 0%; background: var(--safe); transition: width 0.5s ease, background 0.3s ease; }
+
+    .rec-box {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 3px solid var(--accent);
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      color: #e2e8f0;
+      line-height: 1.45;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { text-align: left; padding: 0.65rem 0.6rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; font-size: 0.76rem; text-transform: uppercase; }
+
+    .factor-row { margin-bottom: 0.85rem; }
+    .factor-head { display: flex; justify-content: space-between; font-size: 0.84rem; margin-bottom: 0.3rem; }
+    .factor-bar { height: 8px; background: var(--panel); border-radius: 999px; overflow: hidden; }
+    .factor-fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8); border-radius: 999px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Student Performance Prediction & Academic Risk Analysis</h1>
+        <p>SEC - C • Linear Regression, Logistic Regression, KNN & K-Means Clustering</p>
+      </div>
+      <div class="badges">
+        <span class="badge">Regression R²: {{ metrics.reg_r2 }}%</span>
+        <span class="badge">Logistic Acc: {{ metrics.log_acc }}%</span>
+        <span class="badge">KNN Acc: {{ metrics.knn_acc }}%</span>
+        <span class="badge">K-Means Silhouette: {{ metrics.silhouette }}</span>
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <section class="card">
+        <div class="card-title">
+          <span>Student Academic Profile</span>
+          <div class="presets">
+            <button type="button" class="preset-btn" onclick="loadPreset('high')">High</button>
+            <button type="button" class="preset-btn" onclick="loadPreset('avg')">Average</button>
+            <button type="button" class="preset-btn" onclick="loadPreset('risk')">At-Risk</button>
+          </div>
+        </div>
+
+        <form id="studentForm">
+          <div class="form-grid">
+            <div class="field">
+              <label for="attendance">Attendance (%)</label>
+              <input type="number" id="attendance" min="0" max="100" step="0.5" value="82" required />
+            </div>
+            <div class="field">
+              <label for="study_hours">Study Hours / Week</label>
+              <input type="number" id="study_hours" min="0" max="50" step="0.5" value="15" required />
+            </div>
+            <div class="field">
+              <label for="previous_marks">Previous Marks (0–100)</label>
+              <input type="number" id="previous_marks" min="0" max="100" step="0.5" value="70" required />
+            </div>
+            <div class="field">
+              <label for="assignment_marks">Assignment Marks (0–100)</label>
+              <input type="number" id="assignment_marks" min="0" max="100" step="0.5" value="74" required />
+            </div>
+            <div class="field">
+              <label for="internal_marks">Internal Assessment (0–100)</label>
+              <input type="number" id="internal_marks" min="0" max="100" step="0.5" value="72" required />
+            </div>
+            <div class="field">
+              <label for="learning_support">Learning Support</label>
+              <select id="learning_support" required>
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="submit-btn" id="submitBtn">Analyze Performance & Risk</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="card-title"><span>Prediction & Risk Assessment</span></div>
+
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label">Predicted Final Marks</div>
+            <div id="predMarks" class="kpi-value" style="color: var(--accent);">-- / 100</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Pass / Fail (Logistic)</div>
+            <div id="passFail" class="kpi-value" style="color: var(--muted);">--</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Academic Risk Level</div>
+            <div id="riskLevel" class="kpi-value" style="color: var(--muted);">--</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">K-Means Segment</div>
+            <div id="segmentVal" class="kpi-value" style="font-size: 1.05rem; color: var(--muted);">--</div>
+          </div>
+        </div>
+
+        <div class="prob-box">
+          <div class="prob-row">
+            <span>Pass Probability (KNN Agreement: <strong id="knnAgree">--</strong>)</span>
+            <strong id="passProbText">0.0%</strong>
+          </div>
+          <div class="track"><div id="passFill" class="fill"></div></div>
+        </div>
+
+        <div id="recBox" class="rec-box">
+          Enter student academic details and run analysis to view early intervention recommendations.
+        </div>
+      </section>
+    </div>
+
+    <div class="bottom-grid">
+      <section class="card">
+        <div class="card-title"><span>KNN Similar Student Patterns (Top 3 Peers)</span></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Attendance</th>
+              <th>Study Hrs</th>
+              <th>Prev Marks</th>
+              <th>Final Exam</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="peersBody">
+            <tr><td colspan="5" style="color: var(--muted); text-align: center;">Run analysis to view similar student profiles.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <div class="card-title"><span>Major Factors Affecting Performance</span></div>
+        {% for item in major_factors %}
+        <div class="factor-row">
+          <div class="factor-head">
+            <span>{{ item.feature }}</span>
+            <strong style="color: var(--accent);">{{ item.impact_pct }}%</strong>
+          </div>
+          <div class="factor-bar">
+            <div class="factor-fill" style="width: {{ item.impact_pct }}%;"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </section>
+    </div>
+  </div>
+
+  <script>
+    function loadPreset(type) {
+      const presets = {
+        high: { a: 94, s: 22, p: 88, as: 91, i: 90, l: 'High' },
+        avg:  { a: 76, s: 13, p: 63, as: 66, i: 64, l: 'Medium' },
+        risk: { a: 48, s: 4,  p: 38, as: 41, i: 39, l: 'Low' }
+      };
+      const v = presets[type];
+      document.getElementById('attendance').value = v.a;
+      document.getElementById('study_hours').value = v.s;
+      document.getElementById('previous_marks').value = v.p;
+      document.getElementById('assignment_marks').value = v.as;
+      document.getElementById('internal_marks').value = v.i;
+      document.getElementById('learning_support').value = v.l;
+    }
+
+    document.getElementById('studentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = 'Analyzing...';
+      btn.disabled = true;
+
+      const payload = {
+        attendance: document.getElementById('attendance').value,
+        study_hours: document.getElementById('study_hours').value,
+        previous_marks: document.getElementById('previous_marks').value,
+        assignment_marks: document.getElementById('assignment_marks').value,
+        internal_marks: document.getElementById('internal_marks').value,
+        learning_support: document.getElementById('learning_support').value
+      };
+
+      try {
+        const res = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Prediction failed');
+
+        document.getElementById('predMarks').textContent = `${data.predicted_marks} / 100`;
+
+        const pfEl = document.getElementById('passFail');
+        pfEl.textContent = data.pass_fail;
+        pfEl.style.color = data.pass_fail === 'Pass' ? 'var(--safe)' : 'var(--danger)';
+
+        const riskEl = document.getElementById('riskLevel');
+        riskEl.textContent = data.risk_level;
+        riskEl.style.color = data.risk_level === 'Low' ? 'var(--safe)' : (data.risk_level === 'Medium' ? 'var(--warn)' : 'var(--danger)');
+
+        const segEl = document.getElementById('segmentVal');
+        segEl.textContent = data.segment;
+        segEl.style.color = data.segment === 'High Performing' ? 'var(--safe)' : (data.segment === 'Average' ? 'var(--accent)' : 'var(--danger)');
+
+        document.getElementById('knnAgree').textContent = data.knn_prediction;
+        document.getElementById('passProbText').textContent = `${data.pass_probability}%`;
+        const fill = document.getElementById('passFill');
+        fill.style.width = `${data.pass_probability}%`;
+        fill.style.background = data.pass_probability >= 75 ? 'var(--safe)' : (data.pass_probability >= 45 ? 'var(--warn)' : 'var(--danger)');
+
+        document.getElementById('recBox').textContent = data.recommendation;
+
+        const tbody = document.getElementById('peersBody');
+        tbody.innerHTML = data.similar_peers.map(p => `
+          <tr>
+            <td>${p.attendance}%</td>
+            <td>${p.study_hours} hrs</td>
+            <td>${p.previous_marks}</td>
+            <td><strong>${p.final_marks}</strong></td>
+            <td style="color: ${p.status === 'Pass' ? 'var(--safe)' : 'var(--danger)'}; font-weight: 600;">${p.status}</td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btn.textContent = 'Analyze Performance & Risk';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
